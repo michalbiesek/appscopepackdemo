@@ -1,0 +1,140 @@
+version: '3.7'
+services:
+
+  service1:
+    container_name: service1
+    image: "python:${PYTHON_VERSION:-3.9}"
+    environment:
+      SCOPE_EVENT_METRIC: "false"
+      SCOPE_EVENT_HTTP: "true"
+      SCOPE_EVENT_HTTP_HEADER: ".*"
+      SCOPE_EVENT_NET: "false"
+      SCOPE_EVENT_FS: "false"
+      SCOPE_EVENT_CONSOLE: "false"
+      SCOPE_METRIC_FS: "false"
+      SCOPE_METRIC_NET: "false"
+      SCOPE_METRIC_PROC: "false"
+      SCOPE_CRIBL_ENABLE: "false"
+      SCOPE_EVENT_DEST: "${APPSCOPE_DEST:-tcp://cribl01:10092}"
+      # SCOPE_METRIC_DEST: "${APPSCOPE_DEST:-tcp://cribl01:10092}"
+      # SCOPE_CRIBL: "${APPSCOPE_DEST:-tcp://cribl01:10092}"
+      SCOPE_TAG_container_name: "service1"
+    command: ["/usr/local/bin/ldscope", "python3", "-m", "http.server", "${SERVICE_1_PORT:-1234}"]
+    networks:
+      - service1
+      - web
+    volumes:
+      - ldscopeShared:/usr/local/bin
+    depends_on:
+      - cribl01
+      - appscope01
+
+  client_normal:
+    container_name: client_normal
+    build : client
+    command: ["python3", "main.py", "--variant", "valid_req", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
+    networks:
+      - web
+
+  client_attacker1:
+    container_name: client_attacker1
+    build : client
+    command: ["python3", "main.py", "--variant", "header_invalid", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
+    networks:
+      - web
+
+  client_attacker2:
+    container_name: client_attacker2
+    build : client
+    command: ["python3", "main.py", "--variant", "get_req_body", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
+    networks:
+      - web
+
+  cribl01:
+    image: "cribl/cribl:${CRIBL_VERSION:-3.5.1}"
+    container_name: cribl01
+    ports:
+      - "${CRIBL_HOST_PORT:-9000}:9000"
+    networks:
+      - service1
+
+  appscope01:
+    container_name: appscope01
+    image: "cribl/scope:${APPSCOPE_VERSION:-1.1.2}"
+    tty: true
+    volumes:
+      - ldscopeShared:/usr/local/bin
+
+  # es01:
+  #   image: "docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION:-8.3.3}"
+  #   container_name: es01
+  #   environment:
+  #     - xpack.security.enabled=false
+  #     - discovery.type=single-node
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #     nofile:
+  #       soft: 65536
+  #       hard: 65536
+  #   cap_add:
+  #     - IPC_LOCK
+  #   volumes:
+  #     - elasticsearch-data:/usr/share/elasticsearch/data
+  #   ports:
+  #     - "${ES_HOST_PORT:-9200}:9200"
+  #     - 9300:9300
+  #   networks:
+  #     - service1
+
+  # kib01:
+  #   image: "docker.elastic.co/kibana/kibana:${KIBANA_VERSION:-8.3.3}"
+  #   container_name: kib01
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://es01:9200
+  #   ports:
+  #     - "${KIBANA_HOST_PORT:-5601}:5601"
+  #   depends_on:
+  #     - es01
+  #   networks:
+  #     - service1
+
+  graf01:
+    container_name: graf01
+    build:
+      context: grafana
+    environment:
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/appscope.json
+      - GF_SECURITY_ADMIN_PASSWORD=scopedemo
+    ports:
+      - "3000:3000"
+    networks:
+      - service1
+
+  influx01:
+    container_name: influx01
+    image: influxdb
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=scope
+      - DOCKER_INFLUXDB_INIT_PASSWORD=scopedemo
+      - DOCKER_INFLUXDB_INIT_ORG=scope
+      - DOCKER_INFLUXDB_INIT_BUCKET=default
+      - DOCKER_INFLUXDB_INIT_RETENTION=1w
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=5up3r-S3cr3t-auth-t0k3n
+    ports:
+      - "8086:8086"
+    networks:
+      - service1
+
+volumes:
+  ldscopeShared:
+  # elasticsearch-data:
+  #   driver: local
+
+networks:
+  web:
+    driver: bridge
+  service1:
+    driver: bridge
