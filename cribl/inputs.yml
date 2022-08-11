@@ -1,0 +1,36 @@
+inputs:
+  in_tcp_json:
+    disabled: true
+    sendToRoutes: true
+    pqEnabled: false
+    streamtags: []
+    host: 0.0.0.0
+    tls:
+      disabled: true
+    ipWhitelistRegex: /.*/
+    maxActiveCxn: 1000
+    enableProxyHeader: false
+    authType: manual
+    authToken: ""
+    type: tcpjson
+    port: 10070
+
+  in_appscope:
+    disabled: false
+    sendToRoutes: false
+    streamtags: []
+    ipWhitelistRegex: /.*/
+    maxActiveCxn: 1000
+    enableProxyHeader: false
+    staleChannelFlushMs: 10000
+    enableUnixPath: false
+    authType: manual
+    tls:
+      disabled: true
+    authToken: ""
+    host: 0.0.0.0
+    type: appscope
+    port: 10092
+    connections:
+      - output: webhook01
+        pipeline: ""

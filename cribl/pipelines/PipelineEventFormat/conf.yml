@@ -1,0 +1,14 @@
+output: default
+streamtags: []
+groups: {}
+asyncFuncTimeout: 1000
+functions:
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - name: _metric
+          value: "`counter`"
+        - name: _metric_type
+          value: "`counter`"

@@ -1,0 +1,96 @@
+version: '3.7'
+services:
+
+  service1:
+    container_name: service1
+    image: "python:${PYTHON_VERSION:-3.9}"
+    environment:
+      SCOPE_EVENT_METRIC: "false"
+      SCOPE_EVENT_HTTP: "true"
+      SCOPE_EVENT_HTTP_HEADER: ".*"
+      SCOPE_EVENT_NET: "false"
+      SCOPE_EVENT_FS: "false"
+      SCOPE_EVENT_CONSOLE: "false"
+      SCOPE_METRIC_FS: "false"
+      SCOPE_METRIC_NET: "true"
+      SCOPE_METRIC_PROC: "false"
+      SCOPE_METRIC_HTTP: "false"
+      SCOPE_METRIC_ENABLE: "false"
+      SCOPE_CRIBL_ENABLE: "false"
+      SCOPE_EVENT_DEST: "${APPSCOPE_DEST:-tcp://cribl1:10092}"
+      SCOPE_TAG_container_name: "service1"
+    command: ["/usr/local/bin/ldscope", "python3", "-m", "http.server", "${SERVICE_1_PORT:-1234}"]
+    networks:
+      - service1
+      - web
+    volumes:
+      - ldscopeShared:/usr/local/bin
+    depends_on:
+      - cribl1
+      - appscope1
+
+  client_normal:
+    container_name: client_normal
+    build : client
+    command: ["python3", "main.py", "--variant", "valid_req", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
+    networks:
+      - web
+
+  client_attacker1:
+    container_name: client_attacker1
+    build : client
+    command: ["python3", "main.py", "--variant", "header_invalid", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
+    networks:
+      - web
+
+  client_attacker2:
+    container_name: client_attacker2
+    build : client
+    command: ["python3", "main.py", "--variant", "get_req_body", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
+    networks:
+      - web
+
+  http_proxy1:
+    container_name: http_proxy1
+    build : http_proxy
+    command: ["python3", "main.py"]
+    networks:
+      - service1
+
+  cribl1:
+    image: "cribl/cribl:${CRIBL_VERSION:-3.5.1}"
+    container_name: cribl1
+    ports:
+      - "${CRIBL_HOST_PORT:-9000}:9000"
+    networks:
+      - service1
+
+  appscope1:
+    container_name: appscope1
+    image: "cribl/scope:${APPSCOPE_VERSION:-1.1.2}"
+    tty: true
+    volumes:
+      - ldscopeShared:/usr/local/bin
+
+  graf01:
+    container_name: graf01
+    build:
+      context: grafana
+    environment:
+      # GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/var/lib/grafana/dashboards/appscope.json"
+      GF_SECURITY_ADMIN_PASSWORD: "scopedemo"
+      GF_INSTALL_PLUGINS: "hamedkarbasi93-nodegraphapi-datasource"
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "hamedkarbasi93-nodegraphapi-datasource"
+    ports:
+      - "3000:3000"
+    networks:
+      - service1
+
+volumes:
+  ldscopeShared:
+
+networks:
+  web:
+    driver: bridge
+  service1:
+    driver: bridge
