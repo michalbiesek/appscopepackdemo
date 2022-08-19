@@ -1,0 +1,50 @@
+<form theme="dark" refresh="5">
+  <label>AppScopeClassicDashboard</label>
+  <description>Choose HTTP Peer</description>
+  <fieldset submitButton="false" autoRun="false">
+    <input type="multiselect" token="dropdown_http_peer" searchWhenChanged="true">
+      <label>HTTP Peer</label>
+      <fieldForLabel>net_peer_ip</fieldForLabel>
+      <fieldForValue>net_peer_ip</fieldForValue>
+      <search>
+        <query>* | stats count by "net_peer_ip"</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <choice value="*">Any</choice>
+      <valuePrefix>net_peer_ip="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Table with HTTP Headers Requests (specific peer_ip)</title>
+      <table>
+        <title>Http Data</title>
+        <search>
+          <query>source="http.req" $dropdown_http_peer$ | fields - http_scheme | table  _time, " ", *</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Table with HTTP Headers Response (specific user and process)</title>
+      <table>
+        <title>Http Data</title>
+        <search>
+          <query>source="http.resp" $dropdown_http_peer$ | fields - body.*, evt_source, event_type, cribl_pipe, channel, host, _raw*, eventtype, index, id, linecount, net*, splunk*, type, source, sourcetype |table _time, " ", *</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>

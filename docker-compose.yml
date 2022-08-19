@@ -58,7 +58,7 @@ services:
       - service1
 
   cribl1:
-    image: "cribl/cribl:${CRIBL_VERSION:-3.5.1}"
+    image: "cribl/cribl:${CRIBL_VERSION:-3.5.2}"
     container_name: cribl1
     ports:
       - "${CRIBL_HOST_PORT:-9000}:9000"
@@ -72,10 +72,9 @@ services:
     volumes:
       - ldscopeShared:/usr/local/bin
 
-  graf01:
-    container_name: graf01
-    build:
-      context: grafana
+  graf1:
+    image: grafana/grafana:latest
+    container_name: graf1
     environment:
       # GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/var/lib/grafana/dashboards/appscope.json"
       GF_SECURITY_ADMIN_PASSWORD: "scopedemo"
@@ -83,11 +82,66 @@ services:
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "hamedkarbasi93-nodegraphapi-datasource"
     ports:
       - "3000:3000"
+    # volumes:
+    #   - ./volumes/grafana:/var/lib/grafana
+    networks:
+      - service1
+    # user: '0'
+
+  splunk1:
+    image: "splunk/splunk:${SPLUNK_VERSION:-8.2.6}"
+    container_name: splunk1
+    ports:
+      - "${SPLUNK_HTTP_PORT:-8000}:${SPLUNK_HTTP_PORT:-8000}"
+      - "${SPLUNK_ADMIN_PORT:-8089}:${SPLUNK_ADMIN_PORT:-8089}"
+      - "${SPLUNK_S2S_PORT:-9997}:${SPLUNK_S2S_PORT:-9997}"
+    environment:
+      SPLUNK_START_ARGS: "--accept-license"
+      SPLUNK_PASSWORD: "scopedemo"
+    networks:
+      - service1
+    volumes:
+      - ./volumes/splunk/HTTPHeaderDemo:/opt/splunk/etc/apps/HTTPHeaderDemo
+
+  es1:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION:-8.3.3}"
+    container_name: es1
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "${ES_HOST_PORT:-9200}:9200"
+      - 9300:9300
+    networks:
+      - service1
+
+  kib1:
+    image: "docker.elastic.co/kibana/kibana:${KIBANA_VERSION:-8.3.3}"
+    container_name: kib1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es1:9200
+    ports:
+      - "${KIBANA_HOST_PORT:-5601}:5601"
+    depends_on:
+      - es1
     networks:
       - service1
 
 volumes:
   ldscopeShared:
+  elasticsearch-data:
+    driver: local
 
 networks:
   web:

@@ -1,0 +1,9 @@
+apiVersion: 1
+
+datasources:
+-  access: 'proxy'
+   is_default: true
+   orgId: 1
+   name: 'Node Graph API'
+   type: 'hamedkarbasi93-nodegraphapi-datasource'
+   url: 'http://http_proxy1:5000'

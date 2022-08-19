@@ -32,5 +32,9 @@ inputs:
     type: appscope
     port: 10092
     connections:
-      - output: webhook01
+      - output: webhook-out1
         pipeline: ""
+      - output: elastic-out1
+        pipeline: pack:AppScopeHttpPack_0.0.1
+      - output: splunk-out1
+        pipeline: pack:AppScopeHttpPack_0.0.1

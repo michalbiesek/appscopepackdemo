@@ -18,37 +18,30 @@ outputs:
     elasticVersion: auto
     onBackpressure: block
     type: elastic
-    url: http://es01:9200/_bulk
+    url: http://es1:9200/_bulk
     index: cribl
     docType: _doc
 
-  influx01:
+  splunk-out1:
     systemFields:
       - cribl_pipe
     streamtags: []
-    useV2API: true
-    timestampPrecision: ms
-    dynamicValueFieldName: true
-    valueFieldName: value
-    concurrency: 5
-    maxPayloadSizeKB: 4096
-    maxPayloadEvents: 0
-    compress: false
-    rejectUnauthorized: false
-    timeoutSec: 30
-    flushPeriodSec: 1
-    useRoundRobinDns: false
-    failedRequestLoggingMode: none
-    safeHeaders: []
+    port: 9997
+    nestedFields: none
+    throttleRatePerSec: "0"
+    tls:
+      disabled: true
+    connectionTimeout: 10000
+    writeTimeout: 60000
+    enableMultiMetrics: false
+    enableACK: true
     onBackpressure: block
-    authType: token
-    type: influxdb
-    url: http://influx01:8086/api/v2/write
-    bucket: default
-    org: scope
-    token: "5up3r-S3cr3t-auth-t0k3n"
+    authType: manual
+    authToken: ""
+    type: splunk
+    host: splunk1
 
-  webhook01:
+  webhook-out1:
     systemFields:
       - cribl_pipe
     streamtags: []
@@ -68,4 +61,3 @@ outputs:
     authType: none
     type: webhook
     url: http://http_proxy1:5000/cribl
-

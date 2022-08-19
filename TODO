@@ -1,4 +1,8 @@
 TODO:
 - fix the automatic handling dashboard grafana
-- fix visualization network
-- provide more details in schema
+- https in server
+- Elasticsearch HTTP headers
+
+
+# GET http://localhost:3000/api/datasources/ HTTP/1.1
+# Authorization: Basic admin:scopedemo
