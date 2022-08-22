@@ -19,6 +19,7 @@ services:
       SCOPE_CRIBL_ENABLE: "false"
       SCOPE_EVENT_DEST: "${APPSCOPE_DEST:-tcp://cribl1:10092}"
       SCOPE_TAG_container_name: "service1"
+      SCOPE_LOG_LEVEL: "debug"
     command: ["/usr/local/bin/ldscope", "--", "python3", "main.py", "--port", "${SERVICE_1_PORT:-1234}"]
     networks:
       - service1

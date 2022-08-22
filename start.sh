@@ -4,11 +4,14 @@ source .env
 SERVER_KEY="server.key"
 SERVER_PEM="server.pem"
 CLIENT_PEM="client.pem"
-python3 -m trustme -i service1
+# python3 -m trustme -i service1
 
+
+# cp $CLIENT_PEM  images/client/src
+
+openssl req -newkey rsa:2048 -nodes -keyout $SERVER_KEY -x509 -days 365 -out $SERVER_PEM -subj "/C=PL/ST=Warsaw/L=GoatTown/O=Cribl/OU=Appscope/CN=cribl.io"
 cp $SERVER_KEY images/service/src
 cp $SERVER_PEM  images/service/src
-cp $CLIENT_PEM  images/client/src
 
 echo "Start docker compose"
 docker-compose --env-file .env up -d --build
