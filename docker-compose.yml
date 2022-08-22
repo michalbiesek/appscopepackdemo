@@ -3,7 +3,7 @@ services:
 
   service1:
     container_name: service1
-    build : service
+    build : images/service
     environment:
       SCOPE_EVENT_METRIC: "false"
       SCOPE_EVENT_HTTP: "true"
@@ -28,28 +28,28 @@ services:
 
   client_normal:
     container_name: client_normal
-    build : client
+    build : images/client
     command: ["python3", "main.py", "--variant", "valid_req", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
     networks:
       - web
 
   client_attacker1:
     container_name: client_attacker1
-    build : client
+    build : images/client
     command: ["python3", "main.py", "--variant", "header_invalid", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
     networks:
       - web
 
   client_attacker2:
     container_name: client_attacker2
-    build : client
+    build : images/client
     command: ["python3", "main.py", "--variant", "get_req_body", "--dest", "service1:${SERVICE_1_PORT:-1234}"]
     networks:
       - web
 
   http_proxy1:
     container_name: http_proxy1
-    build : http_proxy
+    build : images/http_proxy
     command: ["python3", "main.py"]
     networks:
       - service1
@@ -76,7 +76,6 @@ services:
     #   - ./volumes/grafana:/var/lib/grafana
     networks:
       - service1
-    # user: '0'
 
   splunk1:
     image: "splunk/splunk:${SPLUNK_VERSION:-8.2.6}"
