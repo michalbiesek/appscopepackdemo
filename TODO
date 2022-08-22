@@ -1,8 +1,7 @@
 TODO:
 - fix the automatic handling dashboard grafana
 - https in server
-- Elasticsearch HTTP headers
 
-
+<!-- my_test.http -->
 # GET http://localhost:3000/api/datasources/ HTTP/1.1
 # Authorization: Basic admin:scopedemo
