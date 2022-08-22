@@ -79,25 +79,25 @@ docker-compose --env-file .env up -d --build
 echo "Copying the Cribl Configuration"
 docker cp cribl/ cribl1:/opt/cribl/local/
 
-# echo "Waiting for the kibana to start"
+echo "Waiting for the kibana to start"
 
-# counter=0
-# limit=10
+counter=0
+limit=10
 
-# until $(curl --output /dev/null --silent --head --fail http://localhost:$KIBANA_HOST_PORT); do
-#     if [ ${counter} -eq ${limit} ];then
-#       printf '\n'
-#       echo "Max attempts reached"
-#       exit 1
-#     fi
+until $(curl --output /dev/null --silent --head --fail http://localhost:$KIBANA_HOST_PORT); do
+    if [ ${counter} -eq ${limit} ];then
+      printf '\n'
+      echo "Max attempts reached"
+      exit 1
+    fi
 
-#     printf '.'
-#     counter=$(($counter+1))
-#     sleep 5
-# done
+    printf '.'
+    counter=$(($counter+1))
+    sleep 5
+done
 
-# printf '\n'
-# echo "Copying the kibana Configuration"
-# curl -X POST http://localhost:$KIBANA_HOST_PORT/api/saved_objects/_import?overwrite=true -H "kbn-xsrf: true" --form file=@$KIBANA_CFG_FILE
+printf '\n'
+echo "Copying the kibana Configuration"
+curl -X POST http://localhost:$KIBANA_HOST_PORT/api/saved_objects/_import?overwrite=true -H "kbn-xsrf: true" --form file=@$KIBANA_CFG_FILE
 
 echo "Demo is ready."
