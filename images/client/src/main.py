@@ -28,7 +28,7 @@ class HttpReqProducer:
         header = None
         if self.variant == ReqVariant.GET_REQ_BODY:
             try:
-                httpx.request(method="GET", url=f'http://{self.dest}', content="foo_bar")
+                httpx.request(method="GET", url=f'https://{self.dest}', content="foo_bar")
             except httpx.ConnectError:
                 pass
             return
@@ -38,7 +38,7 @@ class HttpReqProducer:
                 'X-rewrite-URL': 'Evil_rewrite_url.com'
             }
         try:
-            httpx.get(f'http://{self.dest}', headers=header)
+            httpx.get(f'https://{self.dest}', headers=header)
         except httpx.ConnectError:
             pass
 

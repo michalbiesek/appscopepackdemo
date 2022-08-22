@@ -1,77 +1,19 @@
 #!/bin/bash
 source .env
 
-KEY_CERT_DIR="/opt/"
-PRIVATE_KEY_NAME="domain.key"
-CERT_NAME="domain.crt"
+PRIVATE_KEY_SERVER_NAME="domain.key"
+CERT_SERVER_NAME="domain.crt"
+PRIVATE_KEY_CLIENT_NAME="client.key"
+CSR_CLIENT_NAME="cert.csr"
+CERT_CLIENT_NAME="cert.pem"
 
-#######################################
-# Copy private key to specific docker container
-# Arguments:
-#   Name of the docker container
-#######################################
-copy_key () {
-    local output_dir=$1:$KEY_CERT_DIR
+openssl req -x509 -newkey rsa:4096 -nodes -out $CERT_SERVER_NAME -keyout $PRIVATE_KEY_SERVER_NAME -days 365 -subj "/C=PL/ST=Warsaw/L=GoatTown/O=Cribl/OU=Appscope/CN=service1"
+openssl req -x509 -newkey rsa:4096 -nodes -out $CSR_CLIENT_NAME -keyout $PRIVATE_KEY_CLIENT_NAME -days 365 -subj "/C=PL/ST=Warsaw/L=GoatTown/O=Cribl/OU=Appscope/CN=client"
+openssl req -x509 -in $CSR_CLIENT_NAME -CA $CERT_SERVER_NAME -CAkey P$RIVATE_KEY_SERVER_NAME -out $CERT_CLIENT_NAME -set_serial 01 -days 365
 
-    echo "Copying the TLS private key to $output_dir"
-    docker cp $PRIVATE_KEY_NAME $output_dir$PRIVATE_KEY_NAME
-}
-
-#######################################
-# Generate ssh key
-# Arguments:
-#   Username
-#######################################
-ssh_new_keys () {
-    local user_name=$1
-    local key_name=${user_name}_key
-    local pub_key=${key_name}.pub
-
-    echo "Generate key $key_name"
-
-    ssh-keygen -q -t rsa -b 4096 -f $key_name -P ""
-    cp $pub_key images
-}
-
-#######################################
-# Delete duplicate public key
-# Arguments:
-#   Username
-#######################################
-ssh_rm_dup_public_key () {
-    local pub_key=${1}_key.pub
-
-    echo "Remove key $pub_key"
-
-    rm images/${pub_key}
-}
-
-#######################################
-# Copy certificate to specific docker container
-# Arguments:
-#   Name of the docker container
-#######################################
-copy_cert () {
-    local output_dir=$1:$KEY_CERT_DIR
-
-    echo "Copying the TLS certificate to $output_dir"
-}
-
-# echo "Start generate private & public keys"
-# ssh_new_keys "foouser" "appscope_sshd" 
-# ssh_new_keys "baruser" "appscope_sshd"
-# cp foouser_key.pub evil_machine/eviluser_key.pub
-
-
-# VM_COUNT=`sysctl -n vm.max_map_count`
-
-# echo "Checking virtual memory settings"
-
-# if [ $VM_COUNT -lt $VM_EXPECTED_LIMIT ];then
-#     echo "Error with vm.max_map_count settings value $VM_COUNT it too low"
-#     echo "Please change the limit with: 'sudo sysctl -w vm.max_map_count=$VM_EXPECTED_LIMIT'"
-#     exit 1
-# fi
+cp $PRIVATE_KEY_SERVER_NAME images/service/src
+cp $CERT_SERVER_NAME  images/service/src
+cp $CERT_CLIENT_NAME  images/client/src
 
 echo "Start docker compose"
 docker-compose --env-file .env up -d --build
