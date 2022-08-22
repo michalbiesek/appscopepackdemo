@@ -38,7 +38,7 @@ class HttpReqProducer:
                 'X-rewrite-URL': 'Evil_rewrite_url.com'
             }
         try:
-            httpx.get(f'https://{self.dest}', headers=header)
+            httpx.get(f'https://{self.dest}', headers=header, verify="client.pem")
         except httpx.ConnectError:
             pass
 

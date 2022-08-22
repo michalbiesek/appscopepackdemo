@@ -19,7 +19,7 @@ def main() -> None:
     cli_cfg = vars(parser.parse_args())
     port = cli_cfg[ARG_PORT]
 
-    app.run(host='0.0.0.0', port=port, ssl_context=('domain.crt', 'domain.key'))
+    app.run(host='0.0.0.0', port=port, ssl_context=('server.pem', 'server.key'))
 
 if __name__ == "__main__":
     main()

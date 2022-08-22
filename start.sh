@@ -1,19 +1,14 @@
 #!/bin/bash
 source .env
 
-PRIVATE_KEY_SERVER_NAME="domain.key"
-CERT_SERVER_NAME="domain.crt"
-PRIVATE_KEY_CLIENT_NAME="client.key"
-CSR_CLIENT_NAME="cert.csr"
-CERT_CLIENT_NAME="cert.pem"
+SERVER_KEY="server.key"
+SERVER_PEM="server.pem"
+CLIENT_PEM="client.pem"
+python3 -m trustme -i service1
 
-openssl req -x509 -newkey rsa:4096 -nodes -out $CERT_SERVER_NAME -keyout $PRIVATE_KEY_SERVER_NAME -days 365 -subj "/C=PL/ST=Warsaw/L=GoatTown/O=Cribl/OU=Appscope/CN=service1"
-openssl req -x509 -newkey rsa:4096 -nodes -out $CSR_CLIENT_NAME -keyout $PRIVATE_KEY_CLIENT_NAME -days 365 -subj "/C=PL/ST=Warsaw/L=GoatTown/O=Cribl/OU=Appscope/CN=client"
-openssl req -x509 -in $CSR_CLIENT_NAME -CA $CERT_SERVER_NAME -CAkey P$RIVATE_KEY_SERVER_NAME -out $CERT_CLIENT_NAME -set_serial 01 -days 365
-
-cp $PRIVATE_KEY_SERVER_NAME images/service/src
-cp $CERT_SERVER_NAME  images/service/src
-cp $CERT_CLIENT_NAME  images/client/src
+cp $SERVER_KEY images/service/src
+cp $SERVER_PEM  images/service/src
+cp $CLIENT_PEM  images/client/src
 
 echo "Start docker compose"
 docker-compose --env-file .env up -d --build
