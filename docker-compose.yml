@@ -3,7 +3,7 @@ services:
 
   service1:
     container_name: service1
-    image: "python:${PYTHON_VERSION:-3.9}"
+    build : server
     environment:
       SCOPE_EVENT_METRIC: "false"
       SCOPE_EVENT_HTTP: "true"
@@ -19,7 +19,9 @@ services:
       SCOPE_CRIBL_ENABLE: "false"
       SCOPE_EVENT_DEST: "${APPSCOPE_DEST:-tcp://cribl1:10092}"
       SCOPE_TAG_container_name: "service1"
-    command: ["/usr/local/bin/ldscope", "python3", "-m", "http.server", "${SERVICE_1_PORT:-1234}"]
+    # command: ["python3", "main.py"]
+    # command: ["python3", "main.py", "--port", "${SERVICE_1_PORT:-1234}"]
+    # command: ["/usr/local/bin/ldscope", "--", "python3", "main.py", "--port", "${SERVICE_1_PORT:-1234}"]
     networks:
       - service1
       - web
